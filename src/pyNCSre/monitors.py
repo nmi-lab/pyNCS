@@ -151,7 +151,10 @@ class Monitors(object):
             self.monitors = []
             self.monitors += monitors_new
 
-        return monitors_new
+        if len(monitors_new) == 1:
+            return monitors_new[0]
+        else:
+            return monitors_new
 
     def create(self, populations, synapse=None, append=True):
         """
