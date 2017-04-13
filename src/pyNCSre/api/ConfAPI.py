@@ -15,6 +15,28 @@ from __future__ import absolute_import
 from .BaseConfAPI import *
 from .ComAPI import ResourceManagerBase
 
+
+
+def load_parameter_definitions(self, filename, name):
+    '''
+    Parse xml file or element tree to generate the object
+    '''
+    #IMPLEMENT (REQUIRED)
+    raise NotImplementedError
+
+
+
+def add_parameter(self, param_elm):
+    '''
+    Add a parameter to the configurator
+    param: dictionary with all attributes of parameter or an xml element or
+    file name with the <parameter /> element
+    '''
+    assert isinstance(param_elm, etree._Element)
+    parameter = Parameter({'SignalName': ''}, self)
+    parseNHML__(param)
+    return parameter
+
 class ConfiguratorBase(ResourceManagerBase):
     def __init__(self):
         '''
@@ -36,79 +58,6 @@ class ConfiguratorBase(ResourceManagerBase):
         '''
         self.parameters = {}
         ResourceManagerBase.__init__(self)
-
-    def _readCSV(self, CSVfile):
-        '''
-        Parse the CSV file to build the configurator object.
-        NOTE: Downward compatibility function
-        '''
-        with open(CSVfile, 'r') as CSV:
-            csv = CSV.readlines()
-
-        #The following builds bias representations only
-        tableFlag = False
-        for line in csv:
-            line = line.replace('\'', '')  # remove single and double quotes
-            line = line.replace('"', '')
-            if line.startswith('\t') or line.startswith('\n'):
-                tableFlag = False
-            elif 'signal' in line.lower() and not tableFlag:
-                # TODO: This code assumes that signal is an essential part of
-                # table
-                # WARNING: There should be some intelligent way to do this!
-                tableFlag = True
-                tableFields = line.strip().split('\t')
-            elif tableFlag and line.strip():
-                row = line.strip().split('\t')
-                # WARNING: This only works if the word bias exists as a field
-                if row[tableFields.index('BiasType')]:
-                    parameters = {}
-                    for i in range(len(row)):
-                        val = row[i]
-                        # Check if the string is a number
-                        try:
-                            val = float(val)
-                        except:
-                            pass
-                        parameters[tableFields[i]] = val
-                    self.add_parameter(parameters)
-        return
-
-    def __getNHML__(self):
-        doc = etree.Element('parameters')
-        for p in self.parameters.values():
-            doc.append(p.__getNHML__())
-        return doc
-
-    def __parseNHML__(self, doc):
-        '''
-        Parse xml file or element tree to generate the object
-        '''
-        if isinstance(doc, str):
-            # parse the file
-            doc = etree.parse(doc).getroot()
-            if not doc.tag == 'parameters':
-                doc = doc.find('parameters')
-        else:
-            # assuming doc is an lxml Element object.
-            assert doc.tag == 'parameters'
-
-        for param in doc:
-            self.add_parameter(param)
-
-    def add_parameter(self, param):
-        #CONVENIENCE FUNCITON. IMPLEMENTATION NOT REQUIRED
-        '''
-        Add a parameter to the configurator
-        param: dictionary with all attributes of parameter or an xml element or
-        file name with the <parameter /> element
-        '''
-        if isinstance(param, dict):
-            self.parameters[param['SignalName']] = Parameter(param, self)
-        elif isinstance(param, etree._Element):
-            parameter = Parameter({'SignalName': ''}, self)
-            parameter.__parseNHML__(param)
-            self.parameters[parameter.SignalName] = parameter
 
     def get_parameter(self, param_name):
         #IMPLEMENT

@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<setuptype version="0.1">
+	<channelAddressing bits="range(30,34)" name="default" type="monitor"/>
+  <channelAddressing bits="range(30,34)" name="default" type="sequencer"/>
+    <!-- SAC chip channel -->
+</setuptype>
+
+<setup version="0.1">
+    <chip chipfile="dynapse.nhml" id="dynapse_u0">
+        <slot id="0"/>
+    </chip>
+</setup>

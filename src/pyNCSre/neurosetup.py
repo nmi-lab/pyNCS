@@ -23,13 +23,13 @@ from lxml import etree
 from itertools import chain
 from .api import ComAPI
 from .api import ConfAPI
+import numpy as np
 
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 def get_data(path):
     return os.path.join(_ROOT, 'data', path)
 
-CHIPFILESDIR ='chipfiles/' 
-URL_SETUPDTD = get_data('setup.dtd')
+CHIPFILESDIR ='NHML/' 
 URL_SETUPTYPEDTD = get_data('setuptype.dtd')
 URL_TIMEOUT = 0.3
 # temp
@@ -108,12 +108,11 @@ class chAddrSpecs(object):
 
 class NeuroSetup(object):
     def __init__(self,
-            setuptype,
             setupfile,
             com_kwargs={},
             map_kwargs={},
             conf_kwargs={},
-            prefix=None,
+            prefix='',
             offline=False,
             validate = True):
         '''
@@ -125,7 +124,6 @@ class NeuroSetup(object):
         *conf_kwargs*: keyword arguments for communicator module. This gets merged with arguments in setup.xml
         *prefix*: path prefix to chipfiles (default: path to files distributed through pyNCS_data package_data)
         *offline*: if True, the setup will not communicate, map or configure.
-        *validate*: if True, the constructor will attempt to validate the setup and setuptype xml files.
         '''
         #Initialize and save API
         self.chaddrspecs = chAddrSpecs()
@@ -139,16 +137,13 @@ class NeuroSetup(object):
         self.map_kwargs = map_kwargs
         #Save setup file locations
         self.setupfile = setupfile
-        self.setuptype = setuptype
         self.prefix = prefix
         self.chips = {}
         self.slots = {}
         self.offline = offline
         self.validate = validate
 
-        self.load_setuptype(self.setuptype, validate = validate)
-        self.load(self.setupfile, offline = offline, validate = validate )
-        self.aerDummyIn, self.aerDummyOut = self.aerDummy()
+        self.load_setup(self.setupfile, validate = validate, offline = offline)
         self.update()
         self.apply()
         self.reset()
@@ -175,54 +170,33 @@ class NeuroSetup(object):
         self.chaddrspecs.seq = seq_ch_addr
 
     def get_chipfilename(self, filename):
-        if self.prefix == None:
+        if self.prefix == '':
             chipfile = get_data(str(CHIPFILESDIR+filename))
         else:
             chipfile = self.prefix + str(filename)
         return chipfile
 
-    def load_setuptype(self, filename, validate = True):
-
-        nsetup = parse_and_validate(filename, dtd=URL_SETUPTYPEDTD, validate = validate)
-
-        for n in nsetup.iterfind('channelAddressing'):
-#            if not n.getAttribute('name') == 'default':
-#                print 'skipping channelAddressing %s'% n.getAttribute('name')
-#                continue
-            if str(n.attrib['type']) == 'monitor':
-                self.monBits = eval(n.attrib['bits'])
-            elif str(n.attrib['type']) == 'sequencer':
-                self.seqBits = eval(n.attrib['bits'])
-            else:
-                raise TypeError('channelAddressing type should be either monitor or sequencer')
-
-        for nslot in nsetup.iterfind('slot'):
-            #Consider defining a function (for esthetic reasons)
-            id = int(nslot.attrib['id'])
-            self.aerSlot[id] = dict()
-            ######### Mon
-            self.aerSlot[id]['monIn'] = get_addrspec(nslot.
-                find('aerMon'), 'in')
-            self.aerSlot[id]['monOut'] = get_addrspec(nslot.
-                find('aerMon'), 'out')
-
-            ######### Seq
-            self.aerSlot[id]['seqIn'] = get_addrspec(nslot.
-                find('aerSeq'), 'in')
-            self.aerSlot[id]['seqOut'] = get_addrspec(nslot.
-                find('aerSeq'), 'out')
-
-    def load(self, filename, offline=False, validate = True):
+    def load_setup(self, filename, validate = True, offline=False):
         '''
         Loads the setup
         Inputs:
         *filename*: setup file name
         *offline*: if True, the chips will not be configured ("pretend" mode).
         '''
-        nsetup = parse_and_validate(filename, dtd=URL_SETUPDTD, validate = validate)
+
+        nsetup = parse_and_validate(filename, dtd=URL_SETUPTYPEDTD, validate = validate)
+        for n in nsetup.iterfind('channelAddressing'):
+            if str(n.attrib['type']) == 'monitor':
+                self.monBits = np.array(eval(n.attrib['bits']), dtype='uint32')
+                self.monChannels = np.array(self.monBits-self.monBits[0], dtype='uint32')
+            elif str(n.attrib['type']) == 'sequencer':
+                self.seqBits = np.array(eval(n.attrib['bits']), dtype='uint32')
+                self.seqChannels = np.array(self.seqBits-self.seqBits[0], dtype='uint32')
+            else:
+                raise TypeError('channelAddressing type should be either monitor or sequencer')
 
         #parse defaultchip (should be unique)
-        self.defaultchipfile = self.get_chipfilename(str(nsetup.find('defaultchip').attrib['chipfile']))
+        #self.defaultchipfile = self.get_chipfilename(str(nsetup.find('defaultchip').attrib['chipfile']))
         #
         # Load communicator, currently, only only communicator per setup is
         # supported
@@ -242,20 +216,6 @@ class NeuroSetup(object):
             self.communicator = self.com_api.Communicator(**self.com_kwargs)
             self.communicator.register_neurosetup(self)
         
-        # Load virtual chips
-        for nchip in nsetup.iterfind('virtualchip'):
-            chipid = str(nchip.attrib['id'])
-            chipfile = self.get_chipfilename(str(nchip.attrib['chipfile']))
-            slot = int(eval(nchip.attrib['slot']))
-            chip = NeuroChip(chipfile, id=chipid, offline=True)
-            #Be sure that the chip is virtual
-            chip.virtual = True
-            self.chips[chipid] = chip
-            self.chipslots[chipid] = slot
-            self.slots[slot] = chipid
-            self.chaddrspecs.chip_aerin[chipid]=chip.aerIn
-            self.chaddrspecs.chip_aerout[chipid]=chip.aerOut
-
         #Load configurators and chips
         for nchip in nsetup.iterfind('chip'):
             chipid = str(nchip.attrib['id'])
@@ -277,8 +237,8 @@ class NeuroSetup(object):
             self.chips[chipid] = chip
             self.chipslots[chipid] = slot
             self.slots[slot] = chipid
-            self.chaddrspecs.chip_aerin[chipid]=chip.aerIn
-            self.chaddrspecs.chip_aerout[chipid]=chip.aerOut
+            self.chaddrspecs.chip_aerin[chipid] = chip.aerIn
+            self.chaddrspecs.chip_aerout[chipid] = chip.aerOut
             chip.configurator.register_neurosetup(self)
 
         #Load Mapper
@@ -316,14 +276,6 @@ class NeuroSetup(object):
             raise ImportError('{0} API failed to be imported'.format(module))
         return mod
 
-    def aerDummy(self):
-        ''' returns a placeholder pyST.addrSpec '''
-        if self.defaultchipfile.endswith('.csv'):
-            aerIn, aerOut = pyST.STas.load_stas_from_csv(self.defaultchipfile)
-        elif self.defaultchipfile.endswith('.nhml'):
-            aerIn, aerOut = pyST.STas.load_stas_from_nhml(self.defaultchipfile)
-        return aerIn, aerOut
-
     def update(self):
         '''
         updates the default monitor/sequencer (pyST) with the chips contained
@@ -331,28 +283,36 @@ class NeuroSetup(object):
         '''
         self.chipsIn = [None for i in range(2 ** len(self.seqBits))]
         self.chipsOut = [None for i in range(2 ** len(self.monBits))]
-        seqList = [self.aerDummyIn for i in range(2 ** len(self.seqBits))]
-        monList = [self.aerDummyOut for i in range(2 ** len(self.monBits))]
+        seqList = [None for i in range(2 ** len(self.seqBits))]
+        monList = [None for i in range(2 ** len(self.monBits))]
 
         for id, nslot in self.chipslots.iteritems():
-            for ii in self.aerSlot[nslot]['monIn']:
-                try:
-                    if self.chips[id].aerIn is not None:
-                        if monList[ii] is self.aerDummyOut or \
-                           not self.chips[id].virtual:
-                            monList[ii] = self.chips[id].aerIn
-                            self.chipsIn[ii] = self.chips[id]
-                except KeyError as e:
-                    pass
-                #If mon.aerIn doesn't exist, then skip it
-                except AttributeError as e:
-                    pass
+            #Consider defining a function (for esthetic reasons)
+            self.aerSlot[nslot] = dict()
+            ######### Mon
+            self.aerSlot[nslot]['monIn'] = [nslot]
+            self.aerSlot[nslot]['monOut'] = [nslot]
+
+            ######### Seq
+            self.aerSlot[nslot]['seqIn'] = [nslot]
+            self.aerSlot[nslot]['seqOut'] = [nslot]
+
+#            for ii in self.aerSlot[nslot]['monIn']:
+#                try:
+#                    if self.chips[id].aerIn is not None:
+#                        if  not self.chips[id].virtual:
+#                            monList[ii] = self.chips[id].aerIn
+#                            self.chipsIn[ii] = self.chips[id]
+#                except KeyError as e:
+#                    pass
+#                #If mon.aerIn doesn't exist, then skip it
+#                except AttributeError as e:
+#                    pass
 
             for ii in self.aerSlot[nslot]['monOut']:
                 try:
                     if self.chips[id].aerOut is not None:
-                        if monList[ii] is self.aerDummyOut or \
-                           not self.chips[id].virtual:
+                        if  not self.chips[id].virtual:
                             monList[ii] = self.chips[id].aerOut
                             self.chipsOut[ii] = self.chips[id]
                 except KeyError as e:
@@ -363,8 +323,7 @@ class NeuroSetup(object):
             for ii in self.aerSlot[nslot]['seqIn']:
                 try:
                     if self.chips[id].aerIn is not None:
-                        if seqList[ii] is self.aerDummyIn or \
-                           not self.chips[id].virtual:
+                        if not self.chips[id].virtual:
                             seqList[ii] = self.chips[id].aerIn
                             self.chipsIn[ii] = self.chips[id]
                 except KeyError as e:
@@ -373,18 +332,16 @@ class NeuroSetup(object):
                     pass
                 #If seq.aerIn doesn't exist, then skip it
 
-            for ii in self.aerSlot[nslot]['seqOut']:
-                try:
-                    if self.chips[id].aerOut is not None:
-                        if seqList[ii] is self.aerDummyIn or \
-                           not self.chips[id].virtual:
-                            seqList[ii] = self.chips[id].aerOut
-                            self.chipsOut[ii] = self.chips[id]
-                except KeyError as e:
-                    raise e
-                except AttributeError as e:
-                    pass
-
+#            for ii in self.aerSlot[nslot]['seqOut']:
+#                try:
+#                    if self.chips[id].aerOut is not None:
+#                        if  not self.chips[id].virtual:
+#                            seqList[ii] = self.chips[id].aerOut
+#                            self.chipsOut[ii] = self.chips[id]
+#                except KeyError as e:
+#                    raise e
+#                except AttributeError as e:
+#                    pass
         self.seq = pyST.channelAddressing(channelBits=self.seqBits, stasList=seqList)
         self.mon = pyST.channelAddressing(channelBits=self.monBits, stasList=monList)
 
@@ -405,15 +362,14 @@ class NeuroSetup(object):
                 self.mapper.set_mappings(self.mapping.mapping)
 
     def __copy__(self):
-        return self.__class__(self.setuptype, self.setupfile,
+        return self.__class__(self.setupfile,
                               prefix=self.prefix, offline=self.offline)
 
     def __deepcopy__(self, memo):
         return self.__copy__()
 
     def __getstate__(self):
-        return {'setuptype' : self.setuptype,
-                "setupfile" : self.setupfile,
+        return {
                 "prefix" : self.prefix,
                 "offline" : self.offline,
                 "validate" : self.validate,
@@ -430,13 +386,8 @@ class NeuroSetup(object):
         self.chips = {}
         self.chipslots = {}
         self.slots = {}
-        self.load_setuptype(self.setuptype, validate = self.validate)
         self.load(self.setupfile, offline = self.offline, validate = self.validate)
-        self.aerDummyIn, self.aerDummyOut = self.aerDummy()
         self.update()
-
-    def __getinitargs__(self):
-        return self.setuptype, self.setupfile
 
     def _pre_process(self, stim):
         if stim == None:

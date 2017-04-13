@@ -1,0 +1,31 @@
+<!ELEMENT setup (channelAddressing+,chip+,communicator,mapper*)>
+<!ELEMENT slot EMPTY>
+<!ELEMENT aerMon EMPTY>
+<!ELEMENT aerSeq EMPTY>
+<!ELEMENT channelAddressing EMPTY>
+<!ELEMENT chip (configurator)>
+<!ELEMENT mapper (parameter*)>
+<!ELEMENT communicator (parameter*)>
+<!ELEMENT configurator (parameter*)>
+<!ELEMENT parameter (#PCDATA)>
+
+<!ATTLIST setup version CDATA #IMPLIED>
+<!ATTLIST aerMon channel CDATA #IMPLIED>
+<!ATTLIST aerMon channel_alt CDATA #IMPLIED>
+<!ATTLIST aerSeq channel CDATA #IMPLIED>
+<!ATTLIST aerSeq channel_alt CDATA #IMPLIED>
+<!ATTLIST channelAddressing name CDATA #IMPLIED>
+<!ATTLIST channelAddressing type (monitor|sequencer) "monitor">
+<!ATTLIST channelAddressing bits CDATA #REQUIRED>
+
+
+
+<!ATTLIST chip chipfile CDATA #REQUIRED>
+<!ATTLIST chip id CDATA #REQUIRED>
+<!ATTLIST chip slot CDATA #REQUIRED>
+
+<!ATTLIST configurator module CDATA #REQUIRED>
+<!ATTLIST communicator module CDATA #REQUIRED>
+<!ATTLIST mapper module CDATA #REQUIRED>
+<!ATTLIST parameter name CDATA #REQUIRED>
+

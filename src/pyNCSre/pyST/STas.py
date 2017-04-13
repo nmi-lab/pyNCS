@@ -16,7 +16,7 @@ import os
 import copy
 import time
 import warnings
-from .STsl import *
+from . STsl import *
 import itertools
 from contextlib import contextmanager
 from . import pyST_globals
@@ -664,9 +664,10 @@ class channelAddressing:
 
         if len(stasList) <= self.nChannels:
             for i in xrange(len(stasList)):
-                self.nBitsTotal[i] = stasList[i].nBitsTotal
-            for i in xrange(len(stasList), self.nChannels):
-                stasList[i].append(None)
+                if stasList[i] != None:
+                    self.nBitsTotal[i] = stasList[i].nBitsTotal
+                else:
+                    self.nBitsTotal[i] = 0
         else:
             raise RuntimeError("len(stasList)>2**nBitChannel !")
 
@@ -733,7 +734,7 @@ class channelAddressing:
             t = pylab.find(channelIdx == channel)
                  # Much faster than boolean list or filter
             if len(t) > 0:
-                ad = (ev.get_ad()[t]) & (2 ** self[channelIdx].nBitsTotal - 1)
+                ad = (ev.get_ad()[t]) 
                 ch_events.add_adtmch(channelIdx, ad, ev.get_tm()[t])
         return ch_events
 
@@ -1146,17 +1147,17 @@ def addrLogicalConstruct(stas, addr):
 
     for hrf_index, hrf in enumerate(stas.iter_hrfs()):  # hrf_index
         #Sanity check
-        assert np.all((addr[hrf_index, :] & (2 ** hrf['bits'] - 1))
+        assert np.all((addr[hrf_index, :] & (2 ** hrf['width'] - 1))
              == addr[hrf_index, :]), "Cropped significant bits"
 
         if hrf['type'] is 1:
             IntCmp = IntCmp + addr[hrf_index, :] * 2 ** IntBitsUsed
-            IntBitsUsed = IntBitsUsed + hrf['bits']
+            IntBitsUsed = IntBitsUsed + hrf['width']
 
         elif hrf['type'] is -1:
             # Considered using length instead: creates rational numbers such as
             # 0.33333333 which does not look nice
-            FracBitsUsed = FracBitsUsed + hrf['bits']
+            FracBitsUsed = FracBitsUsed + hrf['width']
             FracCmp = FracCmp + addr[hrf_index, :] * 2 ** (-FracBitsUsed)
 
     addrLogical = np.array(IntCmp + FracCmp, 'float')
@@ -1183,13 +1184,13 @@ def addrLogicalExtract(stas, addrLogical):
 
     for hrf_index, hrf in enumerate(stas.iter_hrfs()):  # hrf_index
         if hrf['type'] is 1:
-            mask = (2 ** hrf['bits'] - 1)
+            mask = (2 ** hrf['width'] - 1)
             addr[hrf_index, :] = (addr_int >> IntBits) & mask
-            IntBits += hrf['bits']
+            IntBits += hrf['width']
         elif hrf['type'] is -1:
-            FracBits -= hrf['bits']
+            FracBits -= hrf['width']
             addr[hrf_index, :] = (addr_frac >> FracBits) & (
-                2 ** hrf['bits'] - 1)
+                2 ** hrf['width'] - 1)
             #decimal part
 
     return addr
@@ -1246,7 +1247,6 @@ def isValidPhysicalAddress(stas, addrPhys):
     else:
         return addrPhys
 
-
 def addrPhysicalExtract(stas, addrPhys):
     """
     addrPhysicalExtract takes a physical address as argument and returns a numpy array containing the human readable list of addresses. First dimension is the field type, second dimension is the address.
@@ -1295,8 +1295,6 @@ def addrLogicalPhysical(stas, addrLogical, *args, **kwargs):
         print('No. of addresses in the packet : {0}'.
             format(len(addrLogical)))
         raise e
-
-
 
 def _buildGrid(inlist):
     nD = len(inlist)
@@ -1361,12 +1359,10 @@ def addrPhysicalExtractDecode(stas, addrPhys):
     #initalize address list
     if not hasattr(addrPhys, '__len__'):
         addrPhys = [addrPhys]
-    addrPhys = addrPhys & (2 ** stas.nBitsTotal - 1)
 
     addr = np.zeros([len(stas.field), len(addrPhys)], 'uint32')
     for fieldIndex, field in enumerate(stas.iter_fields()):
         addr[fieldIndex, :] = field.extract(addrPhys)
-
     addr = stas.addr_encoder.decode(addr)
 
     return addr
@@ -1463,166 +1459,33 @@ def isValidAddress(stas, addrList):
             raise AssertionError(wrongaddr, err_ind)
     return nEntries, addrListFilled
 
-
-# NOTE: Scipy weave isn't ported to python 3
-from scipy import weave
-from scipy.weave import converters
-# ...
-
-
-def _extract(x, a, r):
-    '''
-    Internal functions for applying the bit permutations defined in the chip file
-    '''
-    N = int(len(x))
-    d = int(r.shape[0])
-    r2 = 2 ** r
-    a2 = 2 ** a
-    y = np.zeros([N], 'int32')
-
-    code = """
-           for (int i=0; i<N; ++i) {
-               for (int j=0; j<d; ++j) {
-                    y[i]+=((x[i] & (a2[j]))>>a[j])*r2[j];
-               }
-           }
-           """
-    # compiler keyword only needed on windows with MSVC installed
-    ext = weave.inline(code,
-                       ['x', 'N', 'd', 'a', 'a2', 'r2', 'r', 'y'],
-                       compiler='gcc')
-    return y
-
-
-def _construct(x, a, r):
-    '''
-    Internal functions for applying the bit permutations defined in the chip file
-    '''
-    N = int(len(x))
-    d = int(r.shape[0])
-    r2 = 2 ** r
-    a2 = 2 ** a
-    y = np.zeros([N], 'int32')
-
-    code = """
-           for (int i=0; i<N; ++i) {
-               for (int j=0; j<d; ++j) {
-                    y[i]+=((x[i] & (r2[j]))>>r[j])*a2[j];
-               }
-           }
-           """
-    # compiler keyword only needed on windows with MSVC installed
-    ext = weave.inline(code,
-                       ['x', 'N', 'd', 'a', 'a2', 'r2', 'r', 'y'],
-                       compiler='gcc')
-    return y
-
-
-######################
-######### STAS #######
 class addressEncoder:
-    def __init__(self, addr_conf, addr_str, addr_pinconf):
-        addr_conf = _process_addrConf(addr_conf)
-        addr_spec, nBits, nBitsTotal = _stas_parse_addrstr(addr_str)
-
-        #Construct Extract, Construct
-        self.fc, fc_field = _stas_create_construct(addr_conf, addr_pinconf)
-        self.fe, fe_field = _stas_create_extract(addr_conf, addr_pinconf)
-
-        nDims = len(addr_conf)
-
-        self.fc_field_dict = {}
-        self.fe_field_dict = {}
-
-        id_list = extract_id_list(addr_pinconf)
-        for i in range(len(addr_pinconf)):
-            self.fc_field_dict[id_list[i]] = fc_field[i]
-
-        id_list = extract_id_list(addr_conf)
-        for i in range(len(addr_conf)):
-            self.fe_field_dict[id_list[i]] = fe_field[i]
-
-    def __getitem__(self, item):
-        if item in self.fc_field_dict.keys():
-            return self.fc_field_dict[item]
-        elif item in self.fe_field_dict.keys():
-            return self.fe_field_dict[item]
-        else:
-            raise AttributeError("There is no such field or pin %s" % item)
+    def __init__(self):
+        pass
 
     def encode(self, addr):
-        return np.vstack(self.fc(addr))
+        return np.vstack(addr)
 
     def decode(self, addr):
-        return np.vstack(self.fe(addr))
+        return np.vstack(addr)
 
     def encode_field(self, field, addr):
-        return np.array(self[field](*addr), 'uint32')
+        return np.array(addr, 'uint32')
 
     def decode_field(self, field, addr):
-        return np.array(self[field](*addr), 'uint32')
-
+        return np.array(addr, 'uint32')
 
 class layoutFieldEncoder:  # private
     """
     Internal struct used for addrSpec, performing the pin layout permutation (the information contained in addrSr)
     """
 
-    def __init__(self, aspec, nWidth, position=0, pin=''):
-        self.aspec = aspec
-        self.aspec2 = 2 ** aspec
-        self.nWidth = nWidth
-        self.rWidth = np.arange(nWidth)
-        self.r2Width = 2 ** self.rWidth
-        self.position = position
-        self.pin = pin
+    def __init__(self, shift, width, name = None):
         #Check if transformation is an identity function. If so, just mask and shift
-        if np.all(aspec == np.arange(aspec[0],aspec[-1]+1)):
-            mask = np.sum([2**i for i in aspec]).astype('uint32')
-            self.extract = lambda x: (x&mask)>>aspec[0]
-            self.construct = lambda x: (x)<<aspec[0]
-        else:
-            self.extract = lambda x: _extract(x, self.aspec, self.rWidth)
-            self.construct = lambda x: _construct(x, self.aspec, self.rWidth)
-
-
-#TODO: Create fieldstruct for logical part and get rid of addrConf
-#
-#
-
-#def generateST(id_list, events, normalize=True):
-#    """
-#    Extracts events from eventsChannel, using the address specification specified for the given channels, returns a list of SpikeList
-#    Inputs:
-#    *stas*: STas.addrSpec object
-#    *events*: STas.events object
-#    *normalize*: if True (default), the timestamp of the first event is set to zeros and all the timestamps of the subsequent events are shifted accordingly.
-#    """
-#    assert events.atype == 'l', 'channelEvents must be of type logical'
-#
-#    spike_list = SpikeList([], [])
-#    t_start = 0
-#    t_stop = 0
-#
-#    if normalize:
-#        events.normalize_tm()
-#
-#    if events.get_nev() > 0:
-#        t_start = events.get_tm().min() * 1e-3
-#        t_stop = events.get_tm().max() * 1e-3
-#
-#    if t_start == t_stop:
-#        t_stop += 1.
-#
-#    events.set_tm(events.get_tm() * 1e-3)
-#    spike_list = SpikeList(
-#            spikes=events.get_adtmev(),
-#            id_list=id_list,
-#            t_start=t_start,
-#            t_stop=t_stop
-#            )
-#
-#    return spike_list
+        self.name=name
+        mask = 2**width-1
+        self.extract = lambda x: (x>>shift)&mask
+        self.construct = lambda x: (x)<<shift
 
 TYPE_TO_NAME_DICT = { -1 : 'synapse dimension', 0 : 'other dimension', 1 : 'neuron dimension'}
 
@@ -1646,8 +1509,6 @@ def repr_addr_spec(addr_spec, nBitsTotal):
     a2n_map = ''.join(base_string) + 'I = ignore \n'
     return p2a_map + ' \n' + a2n_map + ' \n'
 
-
-
 class addrSpec:
     """
     Address specification class
@@ -1655,7 +1516,6 @@ class addrSpec:
 
     *addrConf*: should be a list of dicts. Each dict provides the address specificatoin information for one field, and should contain the following entries:
 
-    - 'f' : Function for translating the address of the field into its physical counterpart
     - 'id' : whose value is equal to a single, unique, lowercase character.
     - 'range' : an iterable containing the possible values the address field can take
     - 'type': which is either 1 (Neuron) or -1 (Synapse) or -2 (Connection parameter).
@@ -1663,9 +1523,9 @@ class addrSpec:
     *addrStr*: should contain a list of space-separated pins with a number following an uppercase character defining the position on the chip. For example: "X0 X1 X2 X3 X4 X5 X6 Y4 Y3 Y2 Y1 Y0"
 
     """
-    def __init__(self, addrStr='', addrConf=list(), addrPinConf='', id="NoName", nhml = False):
+    def __init__(self, addrStr='', addrConf=list(), addrPinConf='', name="NoName"):
         ##script for parsing the adddrStr
-        self.id = id
+        self.id = name
         self.addrPinConf = addrPinConf
         self.addrStr = addrStr
         self.addrConf = addrConf
@@ -1678,36 +1538,14 @@ class addrSpec:
         self.__class__.addrLogicalPhysical = addrLogicalPhysical
         self.__class__.repr_addr_spec = repr_addr_spec
         #Update all parameters
-        if not nhml:
-            self.update()
 
-    def update(self):
-        '''
-        (Re)Generates the object based on the addrStr, addrConf and addrPinConf
-        '''
-
-        self.addrConf = _process_addrConf(self.addrConf)
-        self.addrDict = _process_addrDict(self.addrConf)
-        self.addrSpec, self.nBits, self.nBitsTotal = _stas_parse_addrstr(
-            self.addrStr)
-        self.addr_encoder = addressEncoder(
-            self.addrConf, self.addrStr, self.addrPinConf)
+        self.addrConf, self.addrDict, self.nBits, self.nBitsTotal = _process_addrConf(self.addrConf)
+        self.addr_encoder = addressEncoder()
         self.nDims = len(self.addrConf)
-        self.field, self.nFields = _stas_create_fields(
-            self.nBits, self.addrSpec, self.addrConf, self.addrPinConf)
+        self.field, self.nFields = _stas_create_fields(self,self.nBits, self.addrConf)
         self.nbits = _stas_compute_nbits(self.addrConf)
-        #self.addrExtractLogicalFast = np.empty(
-        #    [2 ** np.sum(self.nbits.values())], 'float')
-        # NOTE: The above code is modified to accomodate for blank bits in the
-        # address space and hence use of nBitsTotal might be more accurate.
         self.addrExtractLogicalFast = dict()
         self.addrExtractPhysicalFast = dict()
-#        try:
-        # Building addresses on the fly.
-        # Cuses memory errors otherwise for large AER spaces
-        #addrBuildHashTable(self)
-#        except Exception as e:
-#            warnings.warn('Could not BuildHashTable: {0}'.format(e))
 
     def __len__(self):
         return self.nDims
@@ -1779,86 +1617,54 @@ class addrSpec:
             descdoc = etree.SubElement(dimdoc, 'description')
             # Decoder
             decoderdoc = etree.SubElement(dimdoc, 'decoder')
-            decoderdoc.text = conf['f']
         # Pins
-        for pins in self.addrPinConf:
-            pindoc = etree.SubElement(doc, 'pin')
-            pindoc.attrib['id'] = pins['id']
-            decoderdoc = etree.SubElement(pindoc, 'decoder')
-            decoderdoc.text = pins['f']
         # Pinlayout
-        pinlayout = etree.SubElement(doc, 'pinlayout')
-        pinlayout.text = self.addrStr
         return doc
 
-    def __parseNHML__(self, doc):
-        '''
-        Parses an lxml element tree or a file name with xml content to
-        initialize the object.
-        '''
-        if isinstance(doc, str):
-            # parse the file
-            doc = etree.parse(doc).getroot()
-        else:
-            # assuming doc is an lxml Element object.
-            assert doc.tag == 'addressSpecification'
+def parse_addrSpec_NHML(doc):
+    '''
+    Parses an lxml element tree or a file name with xml content to
+    initialize the object.
+    '''
+    if isinstance(doc, str):
+        # parse the file
+        doc = etree.parse(doc).getroot()
+    else:
+        # assuming doc is an lxml Element object.
+        assert doc.tag == 'addressSpecification'
 
-        self.addrConf = []  # NOTE: should probably be done in init function
-        self.addrPinConf = []  # NOTE: should also be done in init function
-        self.addrStr = ''  # NOTE: should also be done in init function
-        # addrConf
-        for elm in doc:
-            if elm.tag == 'dim':
-                # Dimensions
-                dim = {}
-                # Id
-                dim['id'] = elm.get('id')
-                # Type
-                if elm.get('type') == 'synapse':
-                    dim['type'] = -1
-                elif elm.get('type') == 'soma':
-                    dim['type'] = 1
-                elif elm.get('type') == 'connection':
-                    dim['type'] = -2
-                else:
-                    # If there are any new types they should be added here!
-                    dim['type'] = None
-                for chld in elm:
-                    if chld.tag == 'range':
-                        # Range
-                        if chld.text:
-                            dim['range'] = eval(chld.text)
-                        else:
-                            dim['range'] = None
-                    elif chld.tag == 'description':
-                        # Description
-                        dim['description'] = chld.text
-                    elif chld.tag == 'decoder':
-                        # Decoder
-                        dim['f'] = chld.text
-                    else:
-                        pass
-                self.addrConf.append(dim)
-            elif elm.tag == 'pin':
-                # Pins
-                pin = {}
-                # Id
-                pin['id'] = elm.get('id')
-                for chld in elm:
-                    # Decoder
-                    if chld.tag == 'decoder':
-                        pin['f'] = chld.text
-                    else:
-                        pass
-                self.addrPinConf.append(pin)
-            elif elm.tag == 'pinlayout':
-                # Pinlayout
-                self.addrStr = elm.text
+    addrConf = []  # NOTE: should probably be done in init function
+    # addrConf
+    for elm in doc:
+        if elm.tag == 'dim':
+            # Dimensions
+            dim = {}
+            # Id
+            dim['id'] = elm.get('id')
+            dim['description'] = elm.get('description')
+            # Type
+            if elm.get('type') == 'synapse':
+                dim['type'] = -1
+            elif elm.get('type') == 'soma':
+                dim['type'] = 1
+            elif elm.get('type') == 'connection':
+                dim['type'] = -2
+            
             else:
-                pass
-        # Update the object
-        self.update()
-        return
+                # If there are any new types they should be added here!
+                dim['type'] = None
+            for chld in elm:
+                if chld.tag == 'range':
+                    # Range
+                    if chld.text:
+                        dim['range'] = eval(chld.text)
+                    else:
+                        dim['range'] = None
+                else:
+                    dim[chld.tag] = eval(chld.text)
+            addrConf.append(dim)
+    # Update the object
+    return addrConf
 
 
 #################################################################
@@ -1870,20 +1676,31 @@ def _process_addrConf(addrConf):
         bits_req = 1
         while max(hrf['range']) >> bits_req > 0:
             bits_req += 1
-        hrf['bits'] = bits_req
-        hrf['default_value'] = 0  # TODO: Add it to chipfile
-    return addrConf
+        if not hrf.has_key('width'):
+            hrf['width'] = bits_req
+        else:
+            hrf['width'] = max(bits_req, hrf['width'])
+        if not hrf.has_key('shift'):
+            hrf['shift'] = 0
+        if not hrf.has_key('default_value'):
+            hrf['default_value'] = 0  # TODO: Add it to chipfile
 
+    nBits = {}
+    for i in addrConf:
+            nBits[i['id']] = i['width']
 
-def _process_addrDict(addrConf):
-    d = dict()
+    nBitsTotal = sum(nBits.values())
+    #nBitsTotal = np.sum(nBits.values())
+
+    addrDict = dict()
     #Find number of required bits from range data
     for i, hrf in enumerate(addrConf):
-        d[hrf['id']] = i
-    return d
+        addrDict[hrf['id']] = i
+
+    return addrConf, addrDict, nBits, nBitsTotal
 
 
-def _stas_create_fields(nBits, addrSpec, addrConf, addrPinConf):
+def _stas_create_fields(addrSpec,nBits,addrConf):
     """
     Creating fields for physical
     """
@@ -1891,13 +1708,11 @@ def _stas_create_fields(nBits, addrSpec, addrConf, addrPinConf):
     field = [None for i in range(nFields)]
     pos = 0
 
-    for nextfield in addrPinConf:
-        aspec = addrSpec[nextfield['id']]
+    for nextfield in addrConf:
         currentfield = layoutFieldEncoder(
-                        aspec=np.array(aspec, 'uint'),
-                        nWidth=nBits[nextfield['id']],
-                        position=pos,
-                        pin=nextfield['id'],
+                        shift = nextfield['shift'],
+                        width = nextfield['width'],
+                        name = nextfield['id'],
                         )
         field[pos] = currentfield
         pos += 1
@@ -1908,9 +1723,8 @@ def _stas_create_fields(nBits, addrSpec, addrConf, addrPinConf):
 def _stas_compute_nbits(addrConf):
     nbits = {-1: 0, 1: 0, 0: 0, -2:0}
     for a in addrConf:
-        nbits[a['type']] += a['bits']
+        nbits[a['type']] += a['width']
     return nbits
-
 
 def extract_id_list(addr_conf):
     id_list = []
@@ -1918,150 +1732,6 @@ def extract_id_list(addr_conf):
         id_list.append(i['id'])
     return id_list
 
-
-def _stas_create_extract(addr_conf, addr_pinconf):
-    """
-    Parsing the Extraction functions
-    """
-
-    arg_str = ''.join([i + ', ' for i in extract_id_list(addr_pinconf)])
-    fe_field = [eval('lambda ' + arg_str + ':' + s['f']) for s in addr_conf]
-    fe = eval('lambda ' + arg_str + ':' + "[" + ''.join([s['f'] +
-        ', ' for s in addr_conf]) + ']')
-    nDims = len(addr_pinconf)  # Trick to find out d
-    return lambda x: fe(*x), fe_field
-
-
-def _stas_create_construct(addr_conf, addr_pinconf):
-    """
-    Parsing the Construction functions
-    """
-
-    arg_str = ''.join([i + ', ' for i in extract_id_list(addr_conf)])
-    fc_field = [eval('lambda ' + arg_str + ':' + v['f']) for v in addr_pinconf]
-    fc = eval('lambda ' + arg_str + ':' + "[" + ''.join([s['f'] +
-        ', ' for s in addr_pinconf]) + ']')
-    return lambda x: fc(*x), fc_field
-
-
-def _stas_parse_addrstr(addrStr):
-
-    assert isinstance(addrStr, str), "addrStr must be a string!"
-    addrSpec = {}
-    nBits = {}
-
-    addrStrsplit = addrStr.split()
-    addrStrsplit.reverse()
-
-    for i in addrStrsplit:
-        if i[0] in addrSpec:
-            if len(addrSpec[i[0]]) < (int(i[1:]) + 1):
-                addrSpec[i[0]].extend([None] * (int(i[1:]) + 1 -
-                    len(addrSpec[i[0]])))
-        else:
-            addrSpec[i[0]] = [None] * (int(i[1:]) + 1)
-            nBits[i[0]] = 0
-
-        addrSpec[i[0]][int(i[1:])] = addrStrsplit.index(i)
-    nBitsTotal = 0
-    for k, v in addrSpec.items():
-        nBitsTotal += len(v)
-        if k == 'I': #I is the ignore bit
-            addrSpec.pop(k)
-            nBits.pop(k)
-        else:
-            nBits[k] = len(v)
-
-    #nBitsTotal = np.sum(nBits.values())
-    return addrSpec, nBits, nBitsTotal
-
-
-def load_stas_from_csv(CSVfile):
-    """
-    This is a reduced version of pyNCS.Chip._readCSV, which reads only the addressing information
-    Inputs:
-    *CSVfile* - A csv file describing the chip (a "chipfile").
-    """
-    if CSVfile == None:
-        raise IOError('filename must be given')
-
-    def indexfrom(list, str):
-        '''Return list index whcih contains specified string'''
-        for i in range(len(list)):
-            if str in list[i].lower():
-                return i
-
-    minwords = ['channel', 'signal', 'bias']
-    keywords = ['channel', 'block', 'signal', 'bias', 'range',
-        'description', 'fet', 'pad', 'value']
-    validtable = 0
-
-    csv = None
-    with open(CSVfile, 'r') as CSV:
-        csv = CSV.readlines()
-    cb = ''
-    #flags
-    validtable = False
-    stasStim_f = False
-    stasMon_f = False
-    addrConf = []
-    addrPinConf = []
-    addrStr = ''
-
-    aerIn, aerOut = None, None
-    for line in csv:
-        line = line.replace('\'', '')  # remove single and double quotes
-        line = line.replace('"', '')
-        if 'chipclass' in line.lower():  # Chipclass
-            chipclass = line.strip().split('\t')[1]
-        elif keywords[0] in line.lower():  # Table header
-            fields = line.strip().split('\t')
-            for i in minwords:
-                if not indexfrom(fields, i):
-                    raise Exception('Bad file format: missing required column : %s, requires channel, signal and bias' % i)
-            validtable = True
-        elif line.startswith('pinlayout') and (stasStim_f or stasMon_f):  # addStr specification
-            addrStr = line.strip().split('\t')[1]
-        elif line.startswith('aerIn'):
-            stasStim_f = True
-            addrConf = []
-            fc_str = ''
-            fe_str = ''
-        elif line.startswith('aerOut'):
-            stasMon_f = True
-            addrConf = []
-            addrPinConf = []
-            fc_str = ''
-            fe_str = ''
-        elif line.startswith('id') and (stasStim_f or stasMon_f):
-            x = line.strip().split('\t')
-            d = {}
-            d['id'] = x[1].strip()
-            d['range'] = eval(x[3])
-            d['range_str'] = x[3]
-            d['type'] = eval(x[5])
-            d['f'] = x[7]
-            addrConf.append(d)
-
-        elif line.startswith('pinid') and (stasStim_f or stasMon_f):
-            x = line.strip().split('\t')
-            d = {}
-            d['id'] = x[1].strip()
-            d['f'] = x[3]
-            addrPinConf.append(d)
-        elif line.startswith('\t') or line.startswith('\n'):
-            validtable = False
-            if stasStim_f:
-                aerIn = addrSpec(addrStr=addrStr, addrConf=addrConf,
-                     addrPinConf=addrPinConf, id=chipclass + "In")
-                stasStim_f = False
-            elif stasMon_f:
-                aerOut = addrSpec(addrStr=addrStr, addrConf=addrConf,
-                     addrPinConf=addrPinConf, id=chipclass + "Out")
-                stasMon_f = False
-
-    #Determining the dimensions from the address specifications
-    return aerIn, aerOut
 
 def load_stas_from_nhml(doc):
     '''
@@ -2076,15 +1746,12 @@ def load_stas_from_nhml(doc):
         # assuming doc is an lxml Element object
         assert doc.tag == 'chip'
     chipclass = doc.get('chipclass')
-    aerIn, aerOut = None, None
     for elm in doc:
         if elm.tag == 'addressSpecification':
             if elm.get('type') == 'aerIn':
-                aerIn = addrSpec(id=chipclass + 'In', nhml = True)
-                aerIn.__parseNHML__(elm)
+                aerIn = addrSpec(name=chipclass + 'In', addrConf = parse_addrSpec_NHML(elm))
             elif elm.get('type') == 'aerOut':
-                aerOut = addrSpec(id=chipclass + 'Out', nhml = True)
-                aerOut.__parseNHML__(elm)
+                aerOut = addrSpec(name=chipclass + 'Out', addrConf = parse_addrSpec_NHML(elm))
             else:
                 pass
     return aerIn, aerOut

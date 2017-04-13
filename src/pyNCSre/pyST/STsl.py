@@ -12,7 +12,7 @@ import numpy as np
 import pylab
 import matplotlib
 from . import pyST_globals
-from . import stgen
+from . import STgen as stgen
 from .spikes import SpikeList, SpikeTrain, load, merge, merge_spikelists
 
 #Globals

@@ -1,10 +1,9 @@
 #-----------------------------------------------------------------------------
 # Purpose:
 #
-# Author: Emre Neftci
+# Author: 
 #
-# Copyright : University of Zurich, Giacomo Indiveri, Emre Neftci, Sadique Sheik, Fabio Stefanini
-# Licence : GPLv2
+# Copyright and Licence : See Neurotools
 #-----------------------------------------------------------------------------
 import warnings
 """
