@@ -15,6 +15,6 @@ setup(name='pyNCSre',
                              'data/chipfiles/*.xml']},
         include_package_data=True,
         install_requires=['numpy',
-                          'lxml'
+                          'lxml',
                           'matplotlib'],
      )
