@@ -660,7 +660,11 @@ class channelAddressing:
         self.nBitsTotal = np.array([0] * len(stasList), 'uint16')
         self.nChannelBits = len(channelBits)
         self.nChannels = 2 ** len(channelBits)
-        self.channels = range(self.nChannels)
+        self.channels = np.arange(self.nChannels, dtype='uint32')
+        self.channelValues = 2**channelBits[0]*self.channels
+        self.channelMask = np.sum(2**self.channels)
+        self.channelShift = channelBits[0]
+        self.channelWidth = len(channelBits)
 
         if len(stasList) <= self.nChannels:
             for i in xrange(len(stasList)):
@@ -716,7 +720,7 @@ class channelAddressing:
         channel: int between 0 and len(channelBits)**2
         """
 
-        return np.uint32(channel << self.nBitsTotal)
+        return np.uint32(self.channelValues[channel])
 
     def extract(self, ev):
         """
@@ -728,11 +732,11 @@ class channelAddressing:
             addrPhysicalExtract
         """
         ch_events = channelEvents(atype='Physical')
-        channel = ev.get_ad() >> self.nBitsTotal     # Get channel information.
+        channel = (ev.get_ad() >> self.channelShift)&self.channelMask     # Get channel information.
 
         for channelIdx in xrange(self.nChannels):
             t = pylab.find(channelIdx == channel)
-                 # Much faster than boolean list or filter
+            # Much faster than boolean list or filter
             if len(t) > 0:
                 ad = (ev.get_ad()[t]) 
                 ch_events.add_adtmch(channelIdx, ad, ev.get_tm()[t])
@@ -987,8 +991,11 @@ class channelAddressing:
         if func == None:
             # If no decoding functions are defined then use all of those
             # available in the channel addressing
-            func_data = dict(zip(range(self.nChannels), [self[i]
-                .addrPhysicalLogical for i in range(self.nChannels)]))
+            func_data_list = [None]*self.nChannels
+            for i in range(self.nChannels):
+                if self[i] != None:
+                    func_data_list[i] = self[i].addrPhysicalLogical
+            func_data = dict(zip(range(self.nChannels), func_data_list))
         else:
             func_data = func
 

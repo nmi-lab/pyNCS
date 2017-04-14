@@ -1,26 +1,26 @@
 <?xml version="1.0" ?>
 <setup version="0.2">
-	<channelAddressing bits="range(30,32)" name="default" type="monitor"/>
-  <channelAddressing bits="range(30,32)" name="default" type="sequencer"/>
-  <chip chipfile="dynapse.nhml" id="dynapse_u0" slot="0">
+	<channelAddressing bits="range(28,32)" name="default" type="monitor"/>
+  <channelAddressing bits="range(28,32)" name="default" type="sequencer"/>
+  <chip chipfile="dynapse.nhml" id="dynapse_u0" slot="1">
     <configurator module="pyCAER.api.conf_tcpclient">    
       <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
       <parameter name = 'port'>4040</parameter>
     </configurator>
   </chip>
-  <chip chipfile="dynapse.nhml" id="dynapse_u1" slot="1">
+  <chip chipfile="dynapse.nhml" id="dynapse_u1" slot="4">
     <configurator module="pyCAER.api.conf_tcpclient">    
       <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
       <parameter name = 'port'>4040</parameter>
     </configurator>
   </chip>
-  <chip chipfile="dynapse.nhml" id="dynapse_u2" slot="2">
+  <chip chipfile="dynapse.nhml" id="dynapse_u2" slot="8">
     <configurator module="pyCAER.api.conf_tcpclient">    
       <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
       <parameter name = 'port'>4040</parameter>
     </configurator>
   </chip>
-  <chip chipfile="dynapse.nhml" id="dynapse_u3" slot="3">
+  <chip chipfile="dynapse.nhml" id="dynapse_u3" slot="12">
     <configurator module="pyCAER.api.conf_tcpclient">    
       <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
       <parameter name = 'port'>4040</parameter>

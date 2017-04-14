@@ -17,6 +17,6 @@ def build_setup(setupfile = 'setupfiles/dynapse_setuptype.xml'):
 if __name__ == '__main__':
     nsetup = build_setup()
     out = nsetup.run(None, duration = 1000)
-    out[0].raster_plot()
+    out[1].raster_plot()
     show()
 

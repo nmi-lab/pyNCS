@@ -345,7 +345,7 @@ class Chip:
         self.aerIn, self.aerOut = pyST.STas.load_stas_from_nhml(doc)
         for elm in doc:
             if elm.tag == 'parameters':
-                self.configurator.load_parameter_definitions(elm)
+                self.configurator.load_parameter_definitions(elm, self)
             else:
                 pass
         # Infer dimensions of the chip

@@ -14,8 +14,8 @@ from expPop import *
 c = nsetup.chips['dynapse_u0']
 tls = []
 sls = []
-for i in range(0,255,5):
-    c.configurator.set_parameter('U0_C0_IF_DC_P.fineValue', i)
+for i in range(0,15,1):
+    #c.configurator.set_parameter('C1_IF_DC_P.fineValue', i)
     nsetup.run(None, duration = 1000)    
     tls.append(mon_core1.copy())
     sls.append(mon_core1.mean_rate())
