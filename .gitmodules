@@ -1,3 +1,0 @@
-[submodule "src/pyNCS/data/NHML"]
-	path = src/pyNCSre/data/NHML
-	url = https://github.com/inincs/NHML.git
