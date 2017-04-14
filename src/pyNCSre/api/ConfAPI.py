@@ -125,6 +125,7 @@ class ConfiguratorBase(ResourceManagerBase):
         '''
         Returns names of all the parameters
         '''
+        import numpy as np
         return np.sort(self.parameters.keys()).tolist()
 
     def save_parameters(self, filename, *kwargs):
