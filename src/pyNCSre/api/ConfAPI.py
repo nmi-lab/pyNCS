@@ -125,7 +125,7 @@ class ConfiguratorBase(ResourceManagerBase):
         '''
         Returns names of all the parameters
         '''
-        return sort(self.parameters.keys()).tolist()
+        return np.sort(self.parameters.keys()).tolist()
 
     def save_parameters(self, filename, *kwargs):
         #CONVENIENCE FUNCTION. IMPLEMENTATION IS NOT REQUIRED
