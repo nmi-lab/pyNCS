@@ -8,19 +8,19 @@
       <parameter name = 'port'>4040</parameter>
     </configurator>
   </chip>
-  <chip chipfile="dynapse.nhml" id="dynapse_u1" slot="4">
+  <chip chipfile="dynapse.nhml" id="dynapse_u1" slot="8">
     <configurator module="pyCAER.api.conf_tcpclient">    
       <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
       <parameter name = 'port'>4040</parameter>
     </configurator>
   </chip>
-  <chip chipfile="dynapse.nhml" id="dynapse_u2" slot="8">
+  <chip chipfile="dynapse.nhml" id="dynapse_u2" slot="12">
     <configurator module="pyCAER.api.conf_tcpclient">    
       <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
       <parameter name = 'port'>4040</parameter>
     </configurator>
   </chip>
-  <chip chipfile="dynapse.nhml" id="dynapse_u3" slot="12">
+  <chip chipfile="dynapse.nhml" id="dynapse_u3" slot="4">
     <configurator module="pyCAER.api.conf_tcpclient">    
       <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
       <parameter name = 'port'>4040</parameter>
