@@ -135,7 +135,9 @@ class ConfiguratorBase(ResourceManagerBase):
         '''
         d = self.get_parameters()
         with open(filename, 'w') as f:
-            f.write("\n".join(["%s\t%.17e" % (k, v) for k, v in d.items()]))
+            for key in sorted(d.keys()):
+                v = d[key]
+                f.write("%s\t%d\n"%(key,v))
         print('Parameters have been saved to the file {0}'.format(filename))
         return None
 

@@ -12,14 +12,10 @@
 from expSetup import *
 nsetup = build_setup()
 pop_exc=pyNCS.Population(name='core0')
-pop_exc.populate_by_addr_list(nsetup, 'dynapse_u0', 'neuron',[[i,0] for i in range(256)])
+pop_exc.populate_by_addr_list(nsetup, 'dynapse_u0', 'neuron',[[i,0] for i in range(128)])
 
 mon_core1 = nsetup.monitors.import_monitors_otf(pop_exc)
 
-if __name__=='__main__':
-    nsetup.run(None, duration=1000)
-    mon_core1.raster_plot()
-    show()
 
 
 
