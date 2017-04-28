@@ -36,7 +36,7 @@ C0_NPDPII_THR_F_P.coarseValue	7
 C0_NPDPII_THR_F_P.fineValue	0
 C0_NPDPII_THR_S_P.coarseValue	7
 C0_NPDPII_THR_S_P.fineValue	40
-C0_PS_WEIGHT_EXC_F_N.coarseValue	15
+C0_PS_WEIGHT_EXC_F_N.coarseValue	7
 C0_PS_WEIGHT_EXC_F_N.fineValue	0
 C0_PS_WEIGHT_EXC_S_N.coarseValue	7
 C0_PS_WEIGHT_EXC_S_N.fineValue	0
