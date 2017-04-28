@@ -41,7 +41,6 @@ def set_neurons_sram(
 
     for neuronId in neurons:
         #we loop over all cores
-
         bits = neuronId << 7 | sramId << 5 | coreId << 15 | 1 << 17 | 1 << 4 | destcoreId << 18 | sy << 27 | dy << 25 | dx << 22 | sx << 24 | coreId << 28 | chipid <<30;
         send_dynapse_event(bits)
 
@@ -62,12 +61,12 @@ def clear_core_cam( chipid,
             bits.append(chipid << 30 | 1 << 17 |coreId << 15 | row <<5 | col );
         send_dynapse_event(bits)
 
-def set_neurons_cam(
+def set_neuron_cam(
         chipid,
         camId,
         ei = 1,
         fs = 1,
-        srcneuronId = range(256),
+        srcneuronId = 0,
         destneuronId = 0,
         srccoreId = 0,
         destcoreId = 0):
@@ -85,6 +84,16 @@ def send_dynapse_event(events):
     sock.send(np.array(events).astype('uint64').tobytes())
 
 if __name__ == '__main__':
-    pass
-    #clear_sram_memory()
-
+    clear_sram_memory(sramId=1,coreId=3,chipid=0)
+    set_neurons_sram(chipid=0, coreId=0,sramId=1,neurons=range(256), destcoreId=8)
+    #core 3 is 0b1000 = 3
+    for j in range(0,16<<4,16):
+        for i in range(32):
+            set_neuron_cam(chipid=0,
+                    camId=i,
+                    ei=1,
+                    fs=1,
+                    srcneuronId=i,
+                    destneuronId=j,
+                    srccoreId=0,
+                    destcoreId=3)

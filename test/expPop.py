@@ -13,9 +13,12 @@ from expSetup import *
 nsetup = build_setup()
 
 pop_exc1=pyNCS.Population(name='core0')
-pop_exc1.populate_by_addr_list(nsetup, 'dynapse_u0', 'neuron',[[i,3] for i in range(256)])
+pop_exc1.populate_by_addr_list(nsetup, 'dynapse_u0', 'neuron',[[i,0] for i in range(32)])
+pop_exc2=pyNCS.Population(name='core3')
+pop_exc2.populate_by_addr_list(nsetup, 'dynapse_u0', 'neuron',[[i,3] for i in range(16)])
 
 mon_core1 = nsetup.monitors.import_monitors_otf(pop_exc1)
+mon_core2 = nsetup.monitors.import_monitors_otf(pop_exc2)
 
 if __name__ == '__main__':
     c0 = nsetup.chips['dynapse_u0']
