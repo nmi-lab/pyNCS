@@ -61,7 +61,6 @@ def clear_core_cam( chipid,
         for col in range(16):
             bits.append(chipid << 30 | 1 << 17 |coreId << 15 | row <<5 | col );
         send_dynapse_event(bits)
-        print bits
 
 def set_neurons_cam(
         chipid,
