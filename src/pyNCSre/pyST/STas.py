@@ -664,6 +664,7 @@ class channelAddressing:
         self.channelValues = 2**channelBits[0]*self.channels
         self.channelMask = np.sum(2**self.channels)
         self.channelShift = channelBits[0]
+        self.addressMask = 2**channelBits[0]-1
         self.channelWidth = len(channelBits)
 
         if len(stasList) <= self.nChannels:
@@ -724,7 +725,7 @@ class channelAddressing:
 
     def extract(self, ev):
         """
-        Extracts the channel information from an array of hardware events. Returns a channelEvents object. Use addrPhysicalExtract for decoding the adresses instead.
+        Extracts the channel information from events. Returns a channelEvents object. Use addrPhysicalExtract for decoding the adresses instead.
 
         *eventsArray*: numpy array of hardware events (uint32)
 
@@ -741,6 +742,18 @@ class channelAddressing:
                 ad = (ev.get_ad()[t]) 
                 ch_events.add_adtmch(channelIdx, ad, ev.get_tm()[t])
         return ch_events
+
+    def extract_channels(self, addr):
+        """
+        Extracts the channel information from an array of hardware events. Returns a channels. 
+
+        *eventsArray*: numpy array of hardware events (uint32)
+
+        See also:
+            addrPhysicalExtract
+        """
+        return (addr >> self.channelShift)&self.channelMask
+
 
     def isChannelAddrList(self, addr):
         """
@@ -846,13 +859,11 @@ class channelAddressing:
         if not addr.dtype == np.uint32:
             addr = addr.astype(np.uint32)
 
-        channels_in_addr = addr >> self.nBitsTotal
+        channels_in_addr = self.extract_channels(addr)
         channelEventsList = [None for i in xrange(self.nChannels)]
         for channelIdx in np.unique(channels_in_addr):
             t = (channels_in_addr == channelIdx)
-            channelEventsList[channelIdx] =\
-                    self[channelIdx].addrPhysicalExtract(
-                        addr[t] - (channels_in_addr[t] << self.nBitsTotal))
+            channelEventsList[channelIdx] = self[channelIdx].addrPhysicalExtract( addr[t] & self.addressMask)
         return channelEventsList
 
     def addrPhysicalLogical(self, addr):
@@ -868,13 +879,12 @@ class channelAddressing:
         if not addr.dtype == np.uint32:
             addr = addr.astype(np.uint32)
 
-        channels_in_addr = addr >> self.nBitsTotal
+        channels= self.extract_channels(addr)
         channelEventsList = [None for i in xrange(self.nChannels)]
         for channelIdx in np.unique(channels_in_addr):
             t = (channels_in_addr == channelIdx)
             channelEventsList[channelIdx] =\
-            self[channelIdx].addrPhysicalLogical(addr[t] -
-                (channels_in_addr[t] << self.nBitsTotal))
+            self[channelIdx].addrPhysicalLogical( addr[t] & self.addressMask)
         return channelEventsList
 
     def importAER(self, input=None, sep='\t', dt=1e-6, format='a', isi=False, *args, **kwargs):

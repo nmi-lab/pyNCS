@@ -26,8 +26,12 @@
       <parameter name = 'port'>4040</parameter>
     </configurator>
   </chip>
-  <communicator module='pyCAER.api.com_aextcpclient'> 
+  <communicator module='pyCAER.api.com_tcpclient'> 
     <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
     <parameter name = 'port_mon'>7778</parameter>
   </communicator>
+  <mapper module="pyCAER.api.mapconf_tcpclient">    
+      <parameter name = 'host' >gillygaloo.ss.uci.edu</parameter>
+      <parameter name = 'port'>8890</parameter>
+  </mapper>
 </setup>

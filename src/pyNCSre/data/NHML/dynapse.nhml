@@ -1,36 +1,21 @@
 <chip chipclass="IFSLWTA">
   <addressSpecification type="aerIn">
+    <dim id="f" type="soma" description="Fast">
+      <width>1</width>
+      <shift>13</shift>
+      <range>range(2)</range>
+    </dim>
+    <dim id="i" type="soma" description="Inh/Exc">
+      <width>1</width>
+      <shift>12</shift>
+      <range>range(2)</range>
+    </dim>
     <dim id="x" type="soma" description="Neuron ID">
       <width>8</width>
-      <shift>20</shift>
+      <shift>4</shift>
       <range>range(256)</range>
     </dim>
-    <dim id="s" type="soma">
-      <width>2</width>
-      <shift>18</shift>
-      <range>range(4)</range>
-    </dim>
-    <dim id="sy" type="soma">
-      <width>1</width>
-      <shift>9</shift>
-      <range>range(1)</range>
-    </dim>
-    <dim id="dy" type="soma">
-      <width>2</width>
-      <shift>7</shift>
-      <range>range(4)</range>
-    </dim>
-    <dim id="sx" type="soma">
-      <width>1</width>
-      <shift>6</shift>
-      <range>range(1)</range>
-    </dim>
-    <dim id="dx" type="soma">
-      <width>2</width>
-      <shift>4</shift>
-      <range>range(4)</range>
-    </dim>
-    <dim id="coreD" type="soma">
+    <dim id="o" type="soma" description="Core ID">
       <width>4</width>
       <shift>0</shift>
       <range>range(16)</range>
@@ -51,10 +36,26 @@
   </addressSpecification>
 
   <neuron id="neuron">
-    <soma type="SOMA" id="general">
+    <soma type="soma" id="general">
       <dim id="x" range="range(256)"/>
       <dim id="o" range="range(4)"/>
     </soma>
+    <synapse id='exc_fast' type='ef'>
+            <dim id='f' range='[1]'/>
+            <dim id='i' range='[0]'/>
+    </synapse>
+    <synapse id='exc_slow' type='es'>
+            <dim id='f' range='[0]'/>
+            <dim id='i' range='[0]'/>
+    </synapse>
+    <synapse id='inh_fast' type='if'>
+            <dim id='f' range='[0]'/>
+            <dim id='i' range='[1]'/>
+    </synapse>
+    <synapse id='inh_slow' type='is'>
+            <dim id='f' range='[0]'/>
+            <dim id='i' range='[1]'/>
+    </synapse>
   </neuron>
 
   <parameters>
