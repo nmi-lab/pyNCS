@@ -10,6 +10,6 @@
 #----------------------------------------------------------------------------- 
 from expPop import *
 
-c = pyNCS.Connection(pop_exc1,pop_exc2,synapse='exc_fast',fashion='random_all2all')
+c = pyNCS.Connection(pop_exc1,pop_exc2,synapse='exc_fast',fashion='one2one')
 
 

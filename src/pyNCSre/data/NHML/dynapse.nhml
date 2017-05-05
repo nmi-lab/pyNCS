@@ -5,7 +5,7 @@
       <shift>13</shift>
       <range>range(2)</range>
     </dim>
-    <dim id="i" type="soma" description="Inh/Exc">
+    <dim id="e" type="soma" description="Inh/Exc">
       <width>1</width>
       <shift>12</shift>
       <range>range(2)</range>
@@ -42,19 +42,19 @@
     </soma>
     <synapse id='exc_fast' type='ef'>
             <dim id='f' range='[1]'/>
-            <dim id='i' range='[0]'/>
+            <dim id='e' range='[1]'/>
     </synapse>
     <synapse id='exc_slow' type='es'>
             <dim id='f' range='[0]'/>
-            <dim id='i' range='[0]'/>
+            <dim id='e' range='[1]'/>
     </synapse>
     <synapse id='inh_fast' type='if'>
             <dim id='f' range='[0]'/>
-            <dim id='i' range='[1]'/>
+            <dim id='e' range='[0]'/>
     </synapse>
     <synapse id='inh_slow' type='is'>
             <dim id='f' range='[0]'/>
-            <dim id='i' range='[1]'/>
+            <dim id='e' range='[0]'/>
     </synapse>
   </neuron>
 

@@ -14,9 +14,14 @@ def build_setup(setupfile = 'setupfiles/dynapse_setuptype.xml'):
             offline=False)
     return nsetup
 
+nsetup = build_setup()
+
+c0 = nsetup.chips['dynapse_u0']
+c1 = nsetup.chips['dynapse_u1']
+c2 = nsetup.chips['dynapse_u2']
+c3 = nsetup.chips['dynapse_u3']
+
+
 if __name__ == '__main__':
-    nsetup = build_setup()
-    c0 = nsetup.chips['dynapse_u0']
-    c1 = nsetup.chips['dynapse_u1']
-    c2 = nsetup.chips['dynapse_u2']
-    c3 = nsetup.chips['dynapse_u3']
+    pass
+
