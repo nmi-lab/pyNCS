@@ -49,7 +49,7 @@
             <dim id='e' range='[1]'/>
     </synapse>
     <synapse id='inh_fast' type='if'>
-            <dim id='f' range='[0]'/>
+            <dim id='f' range='[1]'/>
             <dim id='e' range='[0]'/>
     </synapse>
     <synapse id='inh_slow' type='is'>
