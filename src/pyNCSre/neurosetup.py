@@ -433,7 +433,7 @@ class NeuroSetup(object):
         '''
         return self.communicator.run(raw_stim, **kwargs)
 
-    def stimulate(self, stim=None, **kwargs):
+    def stimulate(self, stim=None, duration=1000, **kwargs):
         '''
         Run without preparing.
         Pre-processes, runs communicator, and post-processes.
