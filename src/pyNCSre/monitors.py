@@ -579,6 +579,9 @@ class SpikeMonitor(object):
     def mean_rate(self, t_start=None, t_stop=None):
         return self.sl.mean_rate(t_start=t_start, t_stop=t_stop)
 
+    def mean_rates(self, t_start=None, t_stop=None):
+        return self.sl.mean_rates(t_start=t_start, t_stop=t_stop)
+
     def firing_rates(self, time_bin=30, mean=True, offset=None):
         st = self.sl
         #get mean rate
