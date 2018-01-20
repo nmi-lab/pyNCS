@@ -1816,7 +1816,7 @@ class SpikeList(object):
         """
         if len(self) > 0:
             times = numpy.concatenate([st.spike_times for st in iter(list(self.spiketrains.values()))])
-            ids = numpy.concatenate([id * numpy.ones(len(st.spike_times), int) for id, st in self.spiketrains.items()])
+            ids = numpy.concatenate([id * numpy.ones(len(st.spike_times), int) for id, st in list(self.spiketrains.items())])
         else:
             times = []
             ids = []

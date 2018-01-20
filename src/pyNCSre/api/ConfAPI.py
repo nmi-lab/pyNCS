@@ -11,7 +11,7 @@
 #Api for modules having pyAMDA-like functionality
 #Api for modules having pyAEX-like functionality
 
-from __future__ import absolute_import
+
 from .BaseConfAPI import *
 from .ComAPI import ResourceManagerBase
 
@@ -102,9 +102,9 @@ class ConfiguratorBase(ResourceManagerBase):
         Input:
         *param_dict*: dictionary of parameter names (str) - value (float) pairs.
         '''
-        for name, value in param_dict.iteritems():
+        for name, value in list(param_dict.items()):
             self.set_parameter(name, value)
-        self.get_parameters(param_dict.keys())
+        self.get_parameters(list(param_dict.keys()))
         return None
 
     def update_parameter(self, param_name, param_value):
@@ -126,7 +126,7 @@ class ConfiguratorBase(ResourceManagerBase):
         Returns names of all the parameters
         '''
         import numpy as np
-        return np.sort(self.parameters.keys()).tolist()
+        return np.sort(list(self.parameters.keys())).tolist()
 
     def save_parameters(self, filename, *kwargs):
         #CONVENIENCE FUNCTION. IMPLEMENTATION IS NOT REQUIRED
@@ -138,7 +138,7 @@ class ConfiguratorBase(ResourceManagerBase):
             for key in sorted(d.keys()):
                 v = d[key]
                 f.write("%s\t%d\n"%(key,v))
-        print('Parameters have been saved to the file {0}'.format(filename))
+        print(('Parameters have been saved to the file {0}'.format(filename)))
         return None
 
     def load_parameters(self, filename, *kwargs):

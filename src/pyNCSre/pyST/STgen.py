@@ -26,7 +26,7 @@ shotnoise_fromspikes - Convolves the provided spike train with shot decaying exp
 
 gamma_hazard - Compute the hazard function for a gamma process with parameters a,b.
 """
-from __future__ import absolute_import
+
 
 from .spikes import SpikeTrain
 from numpy import array, log
@@ -323,9 +323,9 @@ class StGen:
             spikes = numpy.concatenate((spikes, extra_spikes))
 
             if debug:
-                print("ISI buf overrun handled." +
+                print(("ISI buf overrun handled." +
                       "len(spikes)={0}, len(extra_spikes)={1}".format(
-                          len(spikes), len(extra_spikes)))
+                          len(spikes), len(extra_spikes))))
 
         else:
             spikes = numpy.resize(spikes, (i,))
@@ -801,11 +801,11 @@ class StGen:
         noise = numpy.sqrt(2 * fac) * sigma
 
         # python loop... bad+slow!
-        for i in xrange(1, N):
+        for i in range(1, N):
             y[i] = y[i - 1] + fac * (y0 - y[i - 1]) + noise * gauss[i - 1]
 
         if time_it:
-            print(time.time()-1)
+            print((time.time()-1))
 
         if array:
             return (y, t)
@@ -850,12 +850,12 @@ class StGen:
         mfac = 1 - fac
 
         # python loop... bad+slow!
-        for i in xrange(1, N):
+        for i in range(1, N):
             idx = i - 1
             y[i] = y[idx] * mfac + gauss[idx]
 
         if time_it:
-            print(time.time()-t1)
+            print((time.time()-t1))
 
         if array:
             return (y, t)
@@ -889,7 +889,7 @@ def _gen_g_add(spikes, tau, q, t, eps=1.0e-8):
     idx2 = numpy.clip(idx + vs_idx, 0, len(gd_s))
     idx3 = idx2 - idx
 
-    for i in xrange(len(idx)):
+    for i in range(len(idx)):
 
         gd_s[idx[i]:idx2[i]] += kern[0:idx3[i]]
 
