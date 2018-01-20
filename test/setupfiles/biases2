@@ -137,7 +137,7 @@ C3_NPDPII_THR_F_P.fineValue	69
 C3_NPDPII_THR_S_P.coarseValue	7
 C3_NPDPII_THR_S_P.fineValue	40
 C3_PS_WEIGHT_EXC_F_N.coarseValue	0
-C3_PS_WEIGHT_EXC_F_N.fineValue	10
+C3_PS_WEIGHT_EXC_F_N.fineValue	255
 C3_PS_WEIGHT_EXC_S_N.coarseValue	7
 C3_PS_WEIGHT_EXC_S_N.fineValue	0
 C3_PS_WEIGHT_INH_F_N.coarseValue	0

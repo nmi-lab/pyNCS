@@ -58,11 +58,11 @@ def clear_camId(
 def clear_core_cam( chipId,
                     coreId,
                     ):
+    bits = []
     for row in range(1024):
-        bits = []
         for col in range(16):
             bits.append(chipId << 30 | 1 << 17 |coreId << 15 | row <<5 | col );
-        send_dynapse_event(bits)
+    send_dynapse_event(bits)
 
 def set_neuron_cam(
         chipId,
@@ -112,62 +112,3 @@ def init_core(chipId, coreId):
     clear_sram_memory(chipId=chipId, sramId=3, coreId=coreId)
 #core 3 is 0b1000 = 8
 
-if __name__ == '__main__':
-    init_core(chipId = 0, coreId = 0)
-    init_core(chipId = 0, coreId = 2)
-    set_neurons_sram(chipId=0, coreId=0, sramId=1, neurons=range(256), destcoreId=[2])
-    set_neurons_sram(chipId=0, coreId=2, sramId=1, neurons=range(256), destcoreId=[2])
-    cam_used = np.zeros([256], 'int32')
-    Mff = np.eye(256, dtype = 'int32')
-
-    for j in range(0,256):
-        for i in range(0,256):
-            if Mff[i,j] == 1:
-                if cam_used[j]<64:
-                    set_neuron_cam(chipId=0,
-                            camId=cam_used[j],
-                            ei=1,
-                            fs=1,
-                            srcneuronId=i,
-                            destneuronId=j,
-                            srccoreId=0,
-                            destcoreId=2)
-                    cam_used[j]+=1
-                else:
-                    print "exceeded CAM capacity on %d"%j
-
-    Mrec = np.zeros([256,256])
-    Mrec = np.roll(np.eye(256),16,axis=1) + np.roll(np.eye(256),17,axis=1) + np.roll(np.eye(256),18,axis=1)
-    for j in range(0,256):
-        for i in range(0,256):
-            if Mrec[i,j] == 1:
-                if cam_used[j]<64:
-                    set_neuron_cam(chipId=0,
-                            camId=cam_used[j],
-                            ei=1,
-                            fs=1,
-                            srcneuronId=i,
-                            destneuronId=j,
-                            srccoreId=2,
-                            destcoreId=2)
-                    cam_used[j]+=1
-                else:
-                    print "exceeded CAM capacity on %d"%j
-
-    Mreci = np.zeros([256,256])
-    Mreci = np.roll(np.eye(256),15,axis=1) + np.roll(np.eye(256),14,axis=1) + np.roll(np.eye(256),13,axis=1)
-    for j in range(0,256):
-        for i in range(0,256):
-            if Mreci[i,j] == 1:
-                if cam_used[j]<64:
-                    set_neuron_cam(chipId=0,
-                            camId=cam_used[j],
-                            ei=0,
-                            fs=1,
-                            srcneuronId=i,
-                            destneuronId=j,
-                            srccoreId=2,
-                            destcoreId=2)
-                    cam_used[j]+=1
-                else:
-                    print "exceeded CAM capacity on %d"%j
