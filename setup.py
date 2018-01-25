@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(name='pyNCSre',
-	version='20170814',
+	version='20180119',
 	description='Python Neurormophic Chips and Systems, reworked',
 	author='Emre Neftci',
 	author_email='eneftci@uci.edu',
