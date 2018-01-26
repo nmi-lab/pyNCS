@@ -10,9 +10,8 @@
 from xml.dom import minidom as md
 try:
     from urllib.request import urlopen
-    from urllib.error import URLError, HTTPError
 except:
-    from urllib.request import urlopen, URLError, HTTPError
+    from urllib import urlopen
     
 from .chip_v2 import NeuroChip
 from .mapping import Mapping, PMapping
