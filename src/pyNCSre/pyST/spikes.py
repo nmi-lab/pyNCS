@@ -593,7 +593,7 @@ class SpikeTrain(object):
         Bin the spikes with the specified bin width. The first and last bins are calculated from `self.t_start` and `self.t_stop`.
 
         Inputs:
-        time_bin   - the bin width for gathering spikes_times
+        time_bin   - the bin width for gathering spikes_times (in ms)
         normalized - if True, the bin values are scaled to represent firing rates in spikes/second, otherwise otherwise it's the number of spikes per bin.
 
         Examples:
@@ -1474,7 +1474,7 @@ class SpikeList(object):
         objects within the SpikeList.
 
         Inputs:
-            time_bin   - the time bin used to gather the data
+            time_bin   - the time bin used to gather the data (in ms)
             normalized - if True, the histogram are in Hz (spikes/second), otherwise they are
                          in spikes/bin
             display    - if True, a new figure is created. Could also be a subplot. The averaged
