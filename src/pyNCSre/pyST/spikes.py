@@ -945,13 +945,17 @@ class SpikeList(object):
         self.spiketrains[id] = spktrain
         #self.__calc_startstop()
         if (self.t_start is None) or (spktrain.t_start < self.t_start):
-            for i in self.spiketrains:
-                self.spiketrains[i].t_start = spktrain.t_start
             self.t_start = spktrain.t_start
-        if (self.t_stop is None) or (spktrain.t_stop > self.t_stop):
             for i in self.spiketrains:
-                self.spiketrains[i].t_stop = spktrain.t_stop
+                self.spiketrains[i].t_start = self.t_start
+        else:
+            spktrain.t_start = self.t_start
+        if (self.t_stop is None) or (spktrain.t_stop > self.t_stop):
             self.t_stop = spktrain.t_stop
+            for i in self.spiketrains:
+                self.spiketrains[i].t_stop = self.t_stop
+        else:
+            spktrain.t_stop = self.t_stop
 
     def __iter__(self):
         return iter(list(self.spiketrains.values()))

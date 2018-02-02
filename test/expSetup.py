@@ -16,10 +16,10 @@ def build_setup(setupfile = 'setupfiles/dynapse_setuptype.xml'):
 
 nsetup = build_setup()
 
-c0 = nsetup.chips['dynapse_u0']
-c1 = nsetup.chips['dynapse_u1']
-c2 = nsetup.chips['dynapse_u2']
-c3 = nsetup.chips['dynapse_u3']
+U0 = nsetup.chips['U0']
+U1 = nsetup.chips['U1']
+U2 = nsetup.chips['U2']
+U3 = nsetup.chips['U3']
 
 
 if __name__ == '__main__':

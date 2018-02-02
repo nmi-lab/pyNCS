@@ -11,7 +11,7 @@
 #----------------------------------------------------------------------------- 
 from expPop import *
 
-c = nsetup.chips['dynapse_u0']
+c = nsetup.chips['u0']
 tls = []
 sls = []
 for i in range(0,255,15):
