@@ -89,22 +89,22 @@ class AddrGroupBase(object):
         g = self.__copy__()
         if isinstance(i, slice):
             g.addr = self.addr[i].copy()
-            if self._paddr != None:
+            if self._paddr is not None:
                 g._paddr = self._paddr[i]
-            if self._laddr != None:
+            if self._laddr is not None:
                 g._laddr = self._laddr[i]
         else:
             if hasattr(i, '__len__'):
                 g.addr = np.array(self.addr[i])
-                if self._paddr != None:
+                if self._paddr is not None:
                     g._paddr = np.array(self._paddr[i], dtype='uint32')
-                if self._laddr != None:
+                if self._laddr is not None:
                     g._laddr = np.array(self._laddr[i], dtype='float')
             else:
                 g.addr = np.array([self.addr[i]], dtype=self.dtype)
-                if self._paddr != None:
+                if self._paddr is not None:
                     g._paddr = np.array([self._paddr[i]], dtype='uint32')
-                if self._laddr != None:
+                if self._laddr is not None:
                     g._laddr = np.array([self._laddr[i]], dtype='float')
         return g
 
@@ -114,9 +114,9 @@ class AddrGroupBase(object):
         """
         g = self.__copy__()
         g.addr = self.addr[i:j]
-        if self._paddr != None:
+        if self._paddr is not None:
             g._paddr = self._paddr[i:j]
-        if self._laddr != None:
+        if self._laddr is not None:
             g._laddr = self._laddr[i:j]
         return g
 
@@ -606,7 +606,7 @@ class AddrGroup(AddrGroupBase):
         '''
         Regenreates Locigal addresses from address list.
         '''
-        if self._laddr != None:
+        if self._laddr is not None:
             return self._laddr
         if len(self.addr) > 0:
             self._laddr = self.ch_addr[self.channel].addrLogicalConstruct(
@@ -623,7 +623,7 @@ class AddrGroup(AddrGroupBase):
         '''
         Generates Physical addresses from the address list. To regenerate use self.repopulate
         '''
-        if self._paddr != None:
+        if self._paddr is not None:
             return self._paddr
         if len(self.addr) > 0:
             self._paddr = self.ch_addr.addrPhysicalConstruct(

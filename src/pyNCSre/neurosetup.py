@@ -390,7 +390,7 @@ class NeuroSetup(object):
         self.update()
 
     def _pre_process(self, stim):
-        if stim == None:
+        if stim is None:
             stim = self.sequencers
         evs_in = self.mon.exportAER(stim, isi=True)
         evs = self.mapper.filter_events(evs_in)
@@ -403,7 +403,7 @@ class NeuroSetup(object):
         ch_evs = mon_ch_addr.extract(evs_out)
         #Filter
         #-Channel Events filtering is easier to use than RawOutput.decode_dict
-        if filter_channels != None:
+        if filter_channels is None:
             ch_evs.filter_channel(filter_channels)
         stout = mon_ch_addr.rawoutput_from_chevents(
             ch_evs,

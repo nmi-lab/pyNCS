@@ -12,9 +12,9 @@
 from expSetup import *
 
 pop_exc1=pyNCS.Population(name='core0')
-pop_exc1.populate_by_addr_list(nsetup, 'dynapse_u0', 'neuron',[[i,0] for i in range(256)])
+pop_exc1.populate_by_addr_list(nsetup, chipid = 'U0', neurontype = 'neuron', id_list = [[i,0] for i in range(256)])
 pop_exc2=pyNCS.Population(name='core2')
-pop_exc2.populate_by_addr_list(nsetup, 'dynapse_u0', 'neuron',[[i,3] for i in range(256)])
+pop_exc2.populate_by_addr_list(nsetup, chipid = 'U1', neurontype = 'neuron', id_list = [[i,3] for i in range(256)])
 
 mon_core1 = nsetup.monitors.import_monitors_otf(pop_exc1)
 mon_core2 = nsetup.monitors.import_monitors_otf(pop_exc2)
