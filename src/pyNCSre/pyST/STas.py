@@ -850,9 +850,10 @@ class channelAddressing:
         """
         Extracts Physical addresses to human readable addresses
 
+        Inputs:
         *addr*: numpy array of uint32 numbers ( the physical addresses )
 
-        Output is channelAddrList, channel where channelEventsList is a list of arrays which contain the addresses and channel is an array of channels.
+        Output is channelAddrList.
         """
         if not isinstance(addr, np.ndarray):
             addr = np.array(addr, np.uint32)
@@ -863,8 +864,12 @@ class channelAddressing:
         channelEventsList = [None for i in range(self.nChannels)]
         for channelIdx in np.unique(channels_in_addr):
             t = (channels_in_addr == channelIdx)
-            channelEventsList[channelIdx] = self[channelIdx].addrPhysicalExtract( addr[t] & self.addressMask)
+            channelEventsList[channelIdx] = self[channelIdx].addrPhysicalExtract(addr[t] & self.addressMask)
+
+
         return channelEventsList
+
+        
 
     def addrPhysicalLogical(self, addr):
         """

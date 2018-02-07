@@ -31,9 +31,7 @@
      <parameter name = 'host' >128.200.83.67</parameter>
      <parameter name = 'port_mon'>7777</parameter>
    </communicator>
-<!-- 
-   <mapper module="pyCAER.api.mapconf_tcpclient">    
-       <parameter name = 'host' >localhost</parameter>
-       <parameter name = 'port'>8890</parameter>
-   </mapper>-->
+   <mapper module="pyCAER.api.mapconf_ioclient">    
+       <parameter name = 'host' >128.200.83.67</parameter>
+   </mapper>
 </setup>
