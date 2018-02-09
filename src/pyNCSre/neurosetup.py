@@ -418,7 +418,7 @@ class NeuroSetup(object):
         Prepares and stimulates.
         *args* and *kwargs* are keyword arguments passed to Communicator.run()
         '''
-        self.prepare()
+        #self.prepare()
         if not self.offline:
             return self.stimulate(*args, **kwargs)
         else:

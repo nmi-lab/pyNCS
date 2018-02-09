@@ -15,15 +15,16 @@ from pyNCSre.monitors import *
 #Create Populations
 pop_exc1=pyNCS.Population(name='myU0C0_pop')
 pop_exc1.populate_by_addr_list(nsetup, chipid = 'U0', neurontype = 'neuron', id_list = [[i,0] for i in range(256)])
+
 pop_exc2=pyNCS.Population(name='myU1C2_pop')
 pop_exc2.populate_by_addr_list(nsetup, chipid = 'U1', neurontype = 'neuron', id_list = [[i,2] for i in range(256)])
 
 #Create Monitors
-mon_pop1 = nsetup.monitors.import_monitors_otf(pop_exc1)
-mon_pop2 = nsetup.monitors.import_monitors_otf(pop_exc2)
+mon_pop1 = nsetup.monitors.create(pop_exc1)
+mon_pop2 = nsetup.monitors.create(pop_exc2)
 
 #Create Connections
-M = np.eye(256, dtype = 'bool') #Custom Matrix
+M = np.eye(len(mon_pop1), dtype = 'bool') #Custom Matrix
 conn1 = pyNCS.Connection(
         pop_exc1,pop_exc2, 
         synapse='exc_fast',
@@ -31,9 +32,10 @@ conn1 = pyNCS.Connection(
         fashion_kwargs = {'connection':M})
 
 #Prepare setup
-nsetup.prepare()
+#nsetup.prepare()
 
 #Run (stimulus not supported yet)
 nsetup.run(None, duration = 1000)    
+RasterPlot(nsetup.monitors)
 
 
