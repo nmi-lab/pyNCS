@@ -22,7 +22,8 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.pngmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.intersphinx', 'sphinx.ext.todo','rst2pdf.pdfbuilder']
+pdf_documents = [('index', u'rst2pdf', u'Sample rst2pdf doc', u'Emre Neftci'),]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

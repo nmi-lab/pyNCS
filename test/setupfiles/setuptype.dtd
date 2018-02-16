@@ -14,7 +14,8 @@
 <!ATTLIST channelAddressing bits CDATA #REQUIRED>
 
 <!ELEMENT setup (chip+,virtualchip*,defaultchip,communicator,mapper*)>
-<!ELEMENT chip (configurator)>
+<!ELEMENT chip (configurator*)>
+<!ELEMENT virtualchip EMPTY>
 <!ELEMENT mapper (parameter*)>
 <!ELEMENT communicator (parameter*)>
 <!ELEMENT configurator (parameter*)>
@@ -22,8 +23,11 @@
 <!ELEMENT parameter (#PCDATA)>
 
 <!ATTLIST chip chipfile CDATA #REQUIRED>
+<!ATTLIST virtualchip chipfile CDATA #REQUIRED>
 <!ATTLIST chip id CDATA #REQUIRED>
+<!ATTLIST virtualchip id CDATA #REQUIRED>
 <!ATTLIST chip slot CDATA #REQUIRED>
+<!ATTLIST virtualchip slot CDATA #REQUIRED>
 
 <!ATTLIST setup version CDATA #FIXED "1.0">
 <!ATTLIST configurator module CDATA #REQUIRED>

@@ -3,7 +3,7 @@
 <!ELEMENT aerMon EMPTY>
 <!ELEMENT aerSeq EMPTY>
 <!ELEMENT channelAddressing EMPTY>
-<!ELEMENT chip (configurator)>
+<!ELEMENT chip (configurator*)>
 <!ELEMENT mapper (parameter*)>
 <!ELEMENT communicator (parameter*)>
 <!ELEMENT configurator (parameter*)>

@@ -26,6 +26,9 @@
       <parameter name = 'port'>4040</parameter>
     </configurator>
   </chip>
+  <chip chipfile="dynapse.nhml" id="input" slot="4">
+    <configurator module='pyNCSre.api.ConfAPI'></configurator>
+  </chip>
   <!-- <communicator module='pyNCSre.api.ComAPI'> -->
   <communicator module='pyCAER.api.com_tcpclient'> 
      <parameter name = 'host' >128.200.83.67</parameter>
