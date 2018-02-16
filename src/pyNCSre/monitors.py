@@ -204,7 +204,7 @@ def get_t_start(self):
     """
     t_start = 2 ** 16 - 1.
     for st in self.iter_spikelists():
-        t_start = min(st.t_start, t_start)
+        t_start = min((st.t_start or 0.), t_start)
     return t_start
 
 
@@ -214,7 +214,7 @@ def get_t_stop(self):
     """
     t_stop = 0.0
     for st in self.iter_spikelists():
-        t_stop = max(st.t_stop, t_stop)
+        t_stop = max((st.t_stop or 0.), t_stop)
     return t_stop
 
 

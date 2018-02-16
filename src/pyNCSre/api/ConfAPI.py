@@ -166,11 +166,11 @@ class ConfiguratorBase(ResourceManagerBase):
 
                 name_value_pairs[sp[0]] = sp[1]
         self.set_parameters(name_value_pairs)
-
-
-
-
         return None
+
+    def load_parameter_definitions(self, * args, **kwargs):
+        #CONVENIENCE FUNCTION. IMPLEMENTATION IS NOT REQUIRED
+        pass
 
     def reset(self):
         #CONVENIENCE FUNCTION. IMPLEMENTATION IS NOT REQUIRED
