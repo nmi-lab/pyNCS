@@ -358,8 +358,7 @@ class NeuroSetup(object):
     def prepare(self):
         self.mapping.prepare()
         if not self.offline:
-            if len(self.mapping.mapping) > 0:
-                self.mapper.set_mappings(self.mapping.mapping)
+            self.mapper.set_mappings(self.mapping.mapping)
 
     def __copy__(self):
         return self.__class__(self.setupfile,
