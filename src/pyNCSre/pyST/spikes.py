@@ -1024,7 +1024,7 @@ class SpikeList(object):
         See also
             spike_histogram
         """
-        axis = numpy.arange(self.t_start, self.t_stop + time_bin, time_bin)
+        axis = numpy.arange((self.t_start if (self.t_start is not None) else 0), (self.t_stop if (self.t_stop is not None) else 0) + time_bin, time_bin)
         return axis
 
     def concatenate(self, spklists):
@@ -1072,6 +1072,9 @@ class SpikeList(object):
                                 # Does not take relative argument, Check
                                 # SpikeList.merge?
                 self.spiketrains[id] = merge(self.spiketrains[id], spiketrain)
+                newStop = self.spiketrains[id].t_stop
+                if (newStop > self.t_stop):
+                    self.t_stop = newStop
             else:
                 if relative:
                     spiketrain.relative_times()
